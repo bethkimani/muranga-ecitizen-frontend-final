@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://citizen-muranga-portal.onrender.com/api';
 
 const ACCESS_KEY = 'access_token';
 const REFRESH_KEY = 'refresh_token';
