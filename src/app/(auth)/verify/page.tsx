@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { ArrowLeftIcon, KeyRoundIcon } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { Field } from '@/components/ui';
-import { confirmVerification, sendVerification } from '@/api/auth';
+import { confirmVerification, OTP_REQUIRED, sendVerification } from '@/api/auth';
 import { ApiError } from '@/api/client';
 
 // The backend only allows a new code once every 60 seconds.
@@ -23,14 +23,19 @@ function Verify() {
   const [cooldown, setCooldown] = useState(RESEND_SECONDS);
   const tried = useRef(false);
 
+  useEffect(() => {
+    if (!OTP_REQUIRED) router.replace('/signin');
+  }, [router]);
+
   // Count down so "Resend code" is only clickable when the backend will accept it
   useEffect(() => {
-    if (cooldown <= 0) return;
+    if (!OTP_REQUIRED || cooldown <= 0) return;
     const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [cooldown]);
 
   const confirm = async (value: string) => {
+    if (!OTP_REQUIRED) return;
     setLoading(true);
     try {
       await confirmVerification(id, value);
@@ -51,7 +56,7 @@ function Verify() {
   };
 
   useEffect(() => {
-    if (linkCode && id && !tried.current) {
+    if (OTP_REQUIRED && linkCode && id && !tried.current) {
       tried.current = true;
       confirm(linkCode);
     }
@@ -66,6 +71,7 @@ function Verify() {
   };
 
   const resend = async () => {
+    if (!OTP_REQUIRED) return;
     if (!id) return toast.error('Missing account details. Please sign in again.');
     if (cooldown > 0) return;
     try {
@@ -76,6 +82,8 @@ function Verify() {
       toast.error('Could not send a new code. Try again shortly.');
     }
   };
+
+  if (!OTP_REQUIRED) return null;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

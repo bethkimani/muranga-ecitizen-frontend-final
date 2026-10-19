@@ -142,6 +142,7 @@ Open http://localhost:3000.
 | Variable | Description | Example |
 |---|---|---|
 | `NEXT_PUBLIC_API_URL` | Base URL of the backend API | `http://localhost:8000/api` |
+| `NEXT_PUBLIC_OTP_REQUIRED` | Require email/SMS verification after registration and on unverified sign-in (`0` disables verification) | `1` |
 
 Never commit `.env` or `.env.local`. Only `.env.example` belongs in the repository.
 

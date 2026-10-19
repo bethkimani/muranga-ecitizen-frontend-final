@@ -1,5 +1,7 @@
 import { api, tokens } from './client';
 
+export const OTP_REQUIRED = process.env.NEXT_PUBLIC_OTP_REQUIRED !== '0';
+
 export type Role = 'CITIZEN' | 'STAFF' | 'DEPT_HEAD' | 'ADMIN';
 
 export type User = {

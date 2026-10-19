@@ -1,32 +1,30 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircleIcon, EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react';
 import { AuthLayout } from '@/components/AuthLayout';
 import { Field } from '@/components/ui';
-import { homeFor, login, looksLikeEmail, normalizePhone, sendVerification } from '@/api/auth';
+import { homeFor, login, looksLikeEmail, normalizePhone, OTP_REQUIRED, sendVerification } from '@/api/auth';
 import { ApiError } from '@/api/client';
 
 type FormErrors = { id?: string; password?: string };
 
-export default function SignInPage() {
+function SignIn() {
   const router = useRouter();
+  const params = useSearchParams();
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [authError, setAuthError] = useState('');
-  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // Message shown after verifying an account or resetting a password
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search);
-    if (q.get('verified')) setNotice('Your account is verified. Please sign in.');
-    if (q.get('reset')) setNotice('Password changed. Sign in with your new password.');
-  }, []);
+  const notice = params.get('reset')
+    ? 'Password changed. Sign in with your new password.'
+    : params.get('verified')
+      ? 'Your account is verified. Please sign in.'
+      : '';
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,9 +51,13 @@ export default function SignInPage() {
       router.push(homeFor(user.role));
     } catch (err) {
       // 403 means the password was right but the account is not verified yet
-      if (err instanceof ApiError && err.status === 403) {
+      if (err instanceof ApiError && err.status === 403 && OTP_REQUIRED) {
         sendVerification(value).catch(() => {});
         router.push(`/verify?id=${encodeURIComponent(value)}`);
+        return;
+      }
+      if (err instanceof ApiError && err.status === 403) {
+        setAuthError('This account is not verified, and verification is disabled. Please contact support.');
         return;
       }
       setAuthError(
@@ -163,5 +165,13 @@ export default function SignInPage() {
         County staff accounts are created by a county administrator.
       </p>
     </AuthLayout>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignIn />
+    </Suspense>
   );
 }

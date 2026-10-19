@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { CheckIcon, EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react';
 import { AuthLayout } from '@/components/AuthLayout';
 import { Field } from '@/components/ui';
-import { register, normalizePhone, fieldErrors } from '@/api/auth';
+import { OTP_REQUIRED, register, normalizePhone, fieldErrors } from '@/api/auth';
 import { ApiError } from '@/api/client';
 
 type Form = {
@@ -91,8 +91,12 @@ export default function RegisterPage() {
         first_name: first,
         last_name: rest.join(' '),
       });
-      // The backend has sent a code by email and SMS. Verify before signing in.
-      router.push(`/verify?id=${encodeURIComponent(f.email.trim())}`);
+      if (OTP_REQUIRED) {
+        // The backend has sent a code by email and SMS. Verify before signing in.
+        router.push(`/verify?id=${encodeURIComponent(f.email.trim())}`);
+      } else {
+        router.push('/signin');
+      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
         const fe = fieldErrors(err.data);
