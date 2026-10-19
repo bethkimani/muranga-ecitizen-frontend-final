@@ -10,6 +10,9 @@ import { Field } from '@/components/ui';
 import { confirmVerification, sendVerification } from '@/api/auth';
 import { ApiError } from '@/api/client';
 
+// The backend only allows a new code once every 60 seconds.
+const RESEND_SECONDS = 60;
+
 function Verify() {
   const router = useRouter();
   const params = useSearchParams();
@@ -17,7 +20,15 @@ function Verify() {
   const linkCode = params.get('code') ?? '';
   const [code, setCode] = useState(linkCode);
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(RESEND_SECONDS);
   const tried = useRef(false);
+
+  // Count down so "Resend code" is only clickable when the backend will accept it
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
   const confirm = async (value: string) => {
     setLoading(true);
@@ -30,7 +41,11 @@ function Verify() {
         err instanceof ApiError && err.data && typeof err.data === 'object'
           ? (err.data as { detail?: string }).detail
           : undefined;
-      toast.error(detail ?? 'Could not verify. Please try again.');
+      toast.error(
+        detail
+          ? `${detail} Use the code from the newest message only.`
+          : 'Could not verify. Please try again.',
+      );
       setLoading(false);
     }
   };
@@ -52,9 +67,11 @@ function Verify() {
 
   const resend = async () => {
     if (!id) return toast.error('Missing account details. Please sign in again.');
+    if (cooldown > 0) return;
     try {
       await sendVerification(id);
-      toast.success('A new code has been sent. Use the newest one.');
+      setCooldown(RESEND_SECONDS);
+      toast.success('A new code has been sent. Check your inbox and Spam, and use the newest one.');
     } catch {
       toast.error('Could not send a new code. Try again shortly.');
     }
@@ -69,6 +86,9 @@ function Verify() {
         <h2 className="mt-6 text-center text-2xl font-extrabold text-slate-900">Verify your account</h2>
         <p className="mt-2 text-center text-sm text-slate-600">
           We sent a 6-digit code to your email and phone. Enter it below, or click the link in the email.
+        </p>
+        <p className="mt-1 text-center text-xs text-slate-500">
+          Can&apos;t see the email? Check your Spam folder.
         </p>
       </div>
 
@@ -100,8 +120,13 @@ function Verify() {
           </form>
 
           <div className="mt-6 border-t border-slate-200 pt-4 flex items-center justify-between text-xs font-semibold">
-            <button type="button" onClick={resend} className="text-emerald-600 hover:text-emerald-700">
-              Resend code
+            <button
+              type="button"
+              onClick={resend}
+              disabled={cooldown > 0}
+              className="text-emerald-600 hover:text-emerald-700 disabled:cursor-not-allowed disabled:text-slate-400"
+            >
+              {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
             </button>
             <Link href="/signin" className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-900">
               <ArrowLeftIcon className="w-3.5 h-3.5" /> Back to sign in
