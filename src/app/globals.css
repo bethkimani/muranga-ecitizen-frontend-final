@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --color-ink: #171717;
+  --color-muted: #647067;
+  --color-canvas: #f5f7f5;
+  --color-line: #e1e7e2;
+  --color-brand: #00843d;
+  --color-brand-dark: #006830;
+  --color-brand-50: #e6f4ed;
+  --color-gold: #c98212;
+  --color-gold-50: #fbf4e8;
+  --color-gold-ink: #84550c;
+  --color-danger: #d32f2f;
+  --color-danger-50: #fdecec;
+  --color-success: #16834a;
+  --color-success-50: #e8f5ed;
+  --color-warning: #c98212;
+  --color-warning-50: #fbf4e8;
+  --color-warning-ink: #84550c;
+  --shadow-card: 0 2px 8px rgb(23 23 23 / 0.06);
+  --shadow-pop: 0 12px 32px rgb(23 23 23 / 0.12);
+}
+
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: #f5f7f5;
+  color: #171717;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.field {
+  @apply w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/80 transition-colors duration-150 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:bg-canvas disabled:text-muted;
+}
+
+.field-error {
+  @apply border-danger focus:border-danger focus:ring-danger/20;
+}
+
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-danger {
+  @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold transition-[background-color,color,border-color,transform] duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+}
+
+.btn-primary {
+  @apply bg-brand text-white hover:bg-brand-dark;
+}
+
+.btn-secondary {
+  @apply border border-line bg-white text-ink hover:border-brand/40 hover:bg-brand-50;
+}
+
+.btn-ghost {
+  @apply text-ink hover:bg-canvas;
+}
+
+.btn-danger {
+  @apply bg-danger text-white hover:bg-[#a51f1f];
+}
+
+.card {
+  @apply rounded-2xl border border-line bg-white shadow-card;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
