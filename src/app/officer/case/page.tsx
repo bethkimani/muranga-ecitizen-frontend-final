@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import {
   AlarmClockIcon, ArrowLeftIcon, EyeIcon, LockIcon, MapPinIcon, PaperclipIcon,
@@ -35,8 +35,18 @@ function isStaffOnly(e: Record<string, unknown>) {
   return e.is_public === false || e.visible === false || /internal|work/i.test(String(e.kind ?? ''));
 }
 
-export default function OfficerCasePage() {
-  const { id } = useParams<{ id: string }>();
+function PageSkeleton() {
+  return (
+    <div className="mx-auto max-w-[1400px] space-y-4">
+      <Skeleton className="h-10 w-64" />
+      <Skeleton className="h-72 w-full" />
+    </div>
+  );
+}
+
+function OfficerCaseContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
   const user = useCurrentUser();
   const lookups = useLookups();
 
@@ -57,6 +67,11 @@ export default function OfficerCasePage() {
 
   const load = useCallback(async () => {
     setError('');
+    if (!id) {
+      setError('No case was selected.');
+      setLoading(false);
+      return;
+    }
     try {
       const data = await getCase(id);
       setR(data);
@@ -149,14 +164,7 @@ export default function OfficerCasePage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="mx-auto max-w-[1400px] space-y-4">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-72 w-full" />
-      </div>
-    );
-  }
+  if (loading) return <PageSkeleton />;
 
   if (error || !r) {
     return (
@@ -374,5 +382,13 @@ export default function OfficerCasePage() {
         {needsNote && <p className="rounded-lg bg-canvas p-3 text-sm text-[#3A433D]">{summary}</p>}
       </Modal>
     </div>
+  );
+}
+
+export default function OfficerCasePage() {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <OfficerCaseContent />
+    </Suspense>
   );
 }
