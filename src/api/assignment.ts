@@ -1,14 +1,24 @@
 import { api, unwrap } from '@/api/client';
 
-export type Officer = { id: string; name: string; department: string };
+export type Officer = {
+  id: string;
+  name: string;
+  department: string; // department id, '' when unknown
+  departmentName: string; // department name, '' when unknown
+};
 
 // Staff accounts live at /api/staff/ (admin only). Officers have the role STAFF.
 const OFFICERS_URL = '/staff/';
-const requestUrl = (id: number) => `/requests/${id}/`;
+// Backend route: POST /api/requests/<id>/assign/  (admin or department head only)
+const assignUrl = (id: number) => `/requests/${id}/assign/`;
 
 function toOfficer(r: Record<string, unknown>): Officer {
   const s = (v: unknown) => (typeof v === 'string' ? v : '');
-  const d = r.department;
+  const rawDept = r.department ?? r.department_id;
+  const isObj = !!rawDept && typeof rawDept === 'object';
+  const deptStr =
+    rawDept == null ? '' : isObj ? String((rawDept as { id?: unknown }).id ?? '') : String(rawDept);
+  const numeric = deptStr !== '' && !isNaN(Number(deptStr));
   return {
     id: String(r.id ?? ''),
     name:
@@ -17,7 +27,9 @@ function toOfficer(r: Record<string, unknown>): Officer {
       s(r.name) ||
       s(r.username) ||
       s(r.email),
-    department: d && typeof d === 'object' ? String((d as { id?: unknown }).id ?? '') : d == null ? '' : String(d),
+    department: numeric ? deptStr : '',
+    departmentName:
+      s(r.department_name) || (isObj ? s((rawDept as { name?: unknown }).name) : numeric ? '' : deptStr),
   };
 }
 
@@ -32,12 +44,11 @@ export async function getOfficers(): Promise<Officer[]> {
   return rows.filter(isActiveOfficer).map(toOfficer).filter((o) => o.id && o.name);
 }
 
-export function assignRequest(id: number, department: string, officer: string) {
-  return api(requestUrl(id), {
-    method: 'PATCH',
-    body: JSON.stringify({
-      department: department ? Number(department) : null,
-      ...(officer ? { assigned_to: Number(officer) } : {}),
-    }),
+// Routes a request to the department of its category and, when an officer is
+// given, assigns that officer. Without an officer the department head assigns later.
+export function assignRequest(id: number, officer: string) {
+  return api<unknown>(assignUrl(id), {
+    method: 'POST',
+    body: JSON.stringify(officer ? { officer: Number(officer) } : {}),
   });
 }

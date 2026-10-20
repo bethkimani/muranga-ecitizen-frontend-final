@@ -2,7 +2,7 @@
 
 import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import {
   AlarmClockIcon, ArrowLeftIcon, EyeIcon, LockIcon, MapPinIcon, PaperclipIcon,
@@ -45,8 +45,9 @@ function PageSkeleton() {
 }
 
 function OfficerCaseContent() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get('id');
+  // The case id now comes from the address: /officer/cases/17
+  const params = useParams<{ id: string }>();
+  const id = params?.id ?? null;
   const user = useCurrentUser();
   const lookups = useLookups();
 
