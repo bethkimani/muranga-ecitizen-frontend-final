@@ -1,5 +1,8 @@
-// Password reset calls. Adjust API_BASE if your client uses a different env variable.
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://citizen-muranga-portal.onrender.com';
+// Password reset calls.
+// NEXT_PUBLIC_API_URL may or may not end in "/api"; both work.
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? 'https://citizen-muranga-portal.onrender.com')
+  .replace(/\/+$/, '')
+  .replace(/\/api$/, '');
 
 export class RecoveryError extends Error {
   status: number;
