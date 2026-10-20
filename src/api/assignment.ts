@@ -2,8 +2,8 @@ import { api, unwrap } from '@/api/client';
 
 export type Officer = { id: string; name: string; department: string };
 
-// Change these if your Django URLs or field names are different.
-const OFFICERS_URL = '/users/?role=OFFICER';
+// Staff accounts live at /api/staff/ (admin only). Officers have the role STAFF.
+const OFFICERS_URL = '/staff/';
 const requestUrl = (id: number) => `/requests/${id}/`;
 
 function toOfficer(r: Record<string, unknown>): Officer {
@@ -21,11 +21,15 @@ function toOfficer(r: Record<string, unknown>): Officer {
   };
 }
 
+// Only active officers (role STAFF). Department heads and admins are not listed as officers.
+const isActiveOfficer = (r: Record<string, unknown>) =>
+  (r.role === undefined || r.role === 'STAFF') && r.is_active !== false;
+
 export async function getOfficers(): Promise<Officer[]> {
   const rows = unwrap(
     await api<Record<string, unknown>[] | { results: Record<string, unknown>[] }>(OFFICERS_URL),
   );
-  return rows.map(toOfficer).filter((o) => o.id && o.name);
+  return rows.filter(isActiveOfficer).map(toOfficer).filter((o) => o.id && o.name);
 }
 
 export function assignRequest(id: number, department: string, officer: string) {
