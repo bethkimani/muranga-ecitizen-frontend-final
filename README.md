@@ -35,16 +35,7 @@ A web portal where Muranga County residents submit and track service requests, o
 - Automatic logout after inactivity
 - Postman collection (in the backend repo)
 
-## Screenshots
 
-| Page | Screenshot |
-|---|---|
-| Sign in | ![Sign in](docs/screenshots/signin.png) |
-| Citizen dashboard | ![Citizen dashboard](docs/screenshots/dashboard.png) |
-| Submit request | ![Submit request](docs/screenshots/submit-request.png) |
-| Request tracking | ![Request tracking](docs/screenshots/tracking.png) |
-| Officer page | ![Officer page](docs/screenshots/officer.png) |
-| Admin analytics | ![Admin analytics](docs/screenshots/admin-analytics.png) |
 
 ## Design decisions
 
@@ -61,7 +52,7 @@ A web portal where Muranga County residents submit and track service requests, o
 ```
 frontend/
 ├── public/                      # Static assets
-├── docs/screenshots/            # README screenshots
+├
 ├── src/
 │   ├── app/                     # Routes (Next.js App Router)
 │   │   ├── (auth)/              # Sign in, register, verify, forgot, reset
