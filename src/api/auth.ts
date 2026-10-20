@@ -1,6 +1,9 @@
 import { api, tokens } from './client';
 
-export const OTP_REQUIRED = process.env.NEXT_PUBLIC_OTP_REQUIRED !== '0';
+// Verification is switched off for now, so new accounts go straight to sign in.
+// To turn it back on later, replace the line below with:
+// export const OTP_REQUIRED = process.env.NEXT_PUBLIC_OTP_REQUIRED !== '0';
+export const OTP_REQUIRED = false;
 
 export type Role = 'CITIZEN' | 'STAFF' | 'DEPT_HEAD' | 'ADMIN';
 
